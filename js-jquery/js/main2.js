@@ -36,6 +36,19 @@ $(document).ready(
             )
         });
         // CREATE 행 추가 - prompt
-        
+        $("#addBtn").on('click',function(){
+            const name = prompt('이름 입력');
+            const email = prompt('이메일 입력');
+            if(!name || !email) return ;
+            const newId=users[users.length-1].id+1; //javascript or java or c++ or c 스타일
+            check = age >= 19? '성인':'미성년자'; // 3항 연산자
+            // users[users.length-1].id+1 if user.length else 1 // python 스타일
+            // if(users.length){
+            //     const newId = users[users.length-1].id+1
+            // }
+            // else{
+            //     const newId = 1
+            // }
+        })
     }   
 );
