@@ -33,13 +33,20 @@ $(document).ready(
         },2000);
         });
         // 실시간 입력값을 검증
-        $('#username').on('input',function(){
-            const val = $(this).val()
+        // $('#username').on('input',function(){
+        //     const val = $(this).val()
+        //     if(val.length < 3){
+        //         $('#msg').text('3자 이상 입력').css('color','red')
+        //     }else{
+        //         $('#msg').text('사용가능').css('color','green')
+        //     }
+        // });
+        $('#username').on('input', (e)=>{ // 화살표 함수는 this를 바인딩하지 않고 window객체를 반환
+            const val=e.target.value
             if(val.length < 3){
                 $('#msg').text('3자 이상 입력').css('color','red')
             }else{
                 $('#msg').text('사용가능').css('color','green')
-            }
-        });
+            }});
     }
 );
