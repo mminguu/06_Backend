@@ -32,5 +32,14 @@ $(document).ready(
             $(this).prop('disabled',false) // 버튼 비활성화
         },2000);
         });
+        // 실시간 입력값을 검증
+        $('#username').on('input',function(){
+            const val = $(this).val()
+            if(val.length < 3){
+                $('#msg').text('3자 이상 입력').css('color','red')
+            }else{
+                $('#msg').text('사용가능').css('color','green')
+            }
+        });
     }
 );
