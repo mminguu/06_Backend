@@ -48,5 +48,29 @@ $(document).ready(
             }else{
                 $('#msg').text('사용가능').css('color','green')
             }});
+            // 동적 요소 추가
+        let cnt = 1;
+        $('#addBtn').click(function(){
+            $('#list').append(
+                `
+                <div class="item">
+                    동적항목 ${cnt++}
+                    <span class="remove">삭제</span>
+                </div>
+                `
+            );
+        })
+// 이벤트 위임
+// 이벤트 위임은 on 메소드로 사용
+// 부모요소.on(이벤트종류, 자식요소선택자,실행함수)
+// 이유는 javascript로 동적으로 생성한 element는 javascript에서 해당요소의 이벤트를 감지못함 왜냐면
+// javascript보다 나중에 생성된 element 이기때문에
+// html5는 이벤트 버블링이 있어서 모든 이벤트는 부로로 전파된다는 속성을 이용해서 역으로
+// 해당 부모가 이벤트를 감지해서 발생하면 자식의 바로 부모엘리먼트를 제거할수 있다
+// 이것이 바로 이벤트 위임
+// 테이블 , 리스트, 댓글
+        $('#list').on('click', '.remove',function(){
+            $(this).parent().remove();
+        })
     }
 );
