@@ -1,4 +1,4 @@
-# ----------------------------------------------------------------------------------
+
 # 데코레이터 @app.get('/hello') --- 라우터 http://localhost:8000/hello --> 서버 내의 해당 함수를 실행
 # @app.get('/hello')
 # 함수
@@ -23,7 +23,7 @@ def index():
 # @app.get('/hello')
 @app.get('/hello')
 def say_hello(name:str, lang:str):
-    '''두개의 파라메터를 쿼리스트링으로 전달  http://localhost:8000/hello?name=홍길동&lang=ko'''
+    '''두개의 파라메터를 쿼리스트링으로 전달  http://localhost:8000/hello?name=강민지&lang=ko'''
     if lang=='ko':
         return {'message': f'안녕하세요 {name}'}  # 자동으로 json형태로 변환
     elif lang=='en':
