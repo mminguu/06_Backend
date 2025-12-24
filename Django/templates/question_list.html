@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>질문목록</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+<body class="container">
+    <h1>질문목록</h1>
+    {% if  question_list %}
+        <ul>
+        {% for question in question_list %}
+            <li>
+                <!-- <a href="/blog/{{ question.id }}/">{{ question.subject }}</a> -->
+                 <a href="{% url 'blog:detail' question.id %}">{{ question.subject }}</a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>질문이 없습니다.</p>
+    {% endif %}
+</h1>
+</body>
+</html>
