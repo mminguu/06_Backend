@@ -23,11 +23,11 @@ def post_detail(request,pk):
         'post':post,
         'comments':comments,
         # request.user.is_authenticated : 인증여부 판단 즉 인증받은 사람만 가능
-        'is_liked': Like.object
+        'is_liked': Like.objects
             .filter(post=post,user=request.user)
             .exists() 
                 if request.user.is_authenticated else False,
-        'is_bookmarked': Bookmark.object
+        'is_bookmarked': Bookmark.objects
             .filter(post=post,user=request.user)
             .exists() 
                 if request.user.is_authenticated else False,
