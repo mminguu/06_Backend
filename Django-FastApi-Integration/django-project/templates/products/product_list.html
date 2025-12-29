@@ -10,19 +10,20 @@
       <th scope="col">가격</th>
       <th scope="col">수량</th>
       <th scope="col">비고</th>
+      <th scope="col">*</th>
     </tr>
   </thead>
   <tbody>    
     {% for product in products%}
-    <tr data-product-id="{{ product.id }}"> 
-    <!--ajax로 호출할때 클릭이벤ㄴ트로 this로 받아서 , 그런데 동적생성이기떄문에 부모를 통해서 (이벤트 위임방식)-->
+    <!-- ajax로 호출할때 클릭이벤트를 this로 받아서 그런데 동적생성이기 때문에 부모을 통해서 (이벤트 위임) -->
+    <tr data-product-id = "{{ product.id }}"> 
         <td>{{ product.name }}</td>
         <td>{{ product.price }}</td>
         <td>{{ product.stock }}</td>
         <td>{{ product.description }}</td>
         <td>
             <a href="{% url 'products:product_edit' product.id %}" class="btn btn-primary btn-sm">수정</a>
-            <a href="{% url 'products:product_edit' product.id %}" class="btn btn-primary btn-sm">삭제</a>
+            <a href="{% url 'products:product_delete' product.id %}" class="btn btn-danger btn-sm">삭제</a>
         </td>
     </tr>
     {% endfor %}

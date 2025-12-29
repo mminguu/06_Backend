@@ -71,7 +71,8 @@ def get_product(product_id:int , db:Session=Depends(get_db)):
 def create_product(product:schemas.ProductCreate , db:Session=Depends(get_db)):
     db_product = models.Product(**product.model_dump())
     db.add(db_product)# 생성한걸 db에 저장
-    db.commit() # 실제 db에 insert 하는 것.
+    db.commit()# 실제 db에 insert 하는 것.
+    db.refresh(db_product)
     return db_product
 
 # -- 제품 수정 --
