@@ -6,7 +6,7 @@ import models
 import schemas
 from database import engine , get_db
 
-
+# 여기서 진행한 CRUD가 뭐야?
 models.Base.metadata.create_all(bind=engine) # data에 접근하려면 이게 필요함
 
 app = FastAPI(
