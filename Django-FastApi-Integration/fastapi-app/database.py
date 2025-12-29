@@ -17,13 +17,27 @@ engine = create_engine(
 )
 
 # 트랜젝션을 제어 한다. 예외 발생 시 롤백 관리를 하겠다.
-SesssionLocal = sessionmaker(autocommit=False , autoflush=False , bind=engine)
+SessionLocal = sessionmaker(autocommit=False , autoflush=False , bind=engine)
 
 
-# yield db 가 endpoint 함수에 전달하면 endpoint 함수 종료 시 finally 불록 실행
+# yield db가 endpoint 함수에 전달 -> endpoint 함수 종료시 finally 블록 실행
+# @app.get()
+# def test(db:Session=Depends(get_db)):
+#     products = db.query(models.Product).all()
+#     return products
 def get_db():
-    db = SesssionLocal()
+    db = SessionLocal()
+    # return db
     try:
-        yield db # 빌려주고 회수의 개념
+        yield db   # 빌려주고 회수의 개념
     finally:
         db.close()
+
+# 파이썬이 관리하는 방식, 데이터를 스크립트로 초기화 하거나 기타 테스트코드 적용시 사용
+@contextmanager
+def get_db_context():
+    db=SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()    

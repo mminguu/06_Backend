@@ -11,7 +11,7 @@ class ProductBase(BaseModel):
 
 # 생성용 스키마
 # 관리자 전용으로 만들꺼임. 클라이언트가 입력 불가함.
-class ProductCrate(ProductBase): # 제품을 생성하는거니까 생성시에만 필요한거임.
+class ProductCreate(ProductBase): # 제품을 생성하는거니까 생성시에만 필요한거임.
     pass # 현재 상태 동일
 
 # 업데이트
