@@ -22,8 +22,11 @@
         <td>{{ product.stock }}</td>
         <td>{{ product.description }}</td>
         <td>
-            <a href="{% url 'products:product_edit' product.id %}" class="btn btn-primary btn-sm">수정</a>
-            <a href="{% url 'products:product_delete' product.id %}" class="btn btn-danger btn-sm">삭제</a>
+            <a href="{% url 'products:product_edit' product.id %}" class="btn btn-primary btn-sm">수정</a> <!--href는 get방식-->
+            <form method='POST' action="{% url 'products:product_delete' product.id %}" style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+            </form>
         </td>
     </tr>
     {% endfor %}
