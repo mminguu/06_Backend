@@ -5,6 +5,15 @@ from typing import List
 import models
 import schemas
 from database import engine , get_db
+from auth import (
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+    get_current_active_user,
+    get_password_hash,
+    check_permission,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 # 여기서 진행한 CRUD가 뭐야?
 models.Base.metadata.create_all(bind=engine) # data에 접근하려면 이게 필요함
@@ -34,9 +43,103 @@ def root():
         "docs" : "/docs",
         "endpoints" : {
             'products' : '/api/products',
-            'product' : '/api/products/{id}'
+            'product' : '/api/products/{id}',
+            'register' : '/api/auth/token',
+            'me' : '/api/auth/me'
         }
     }
+
+# 인증관련
+@app.post('/api/auth/register',response_model=schemas.User,status_code=status.HTTP_201_CREATED)
+def register_user(user:schemas.UserCreate, db:Session=Depends(get_db)):
+    '''사용자 등록'''
+    # 중복체크
+    db_user = db.query(models.User).filter(models.User.username == user.username).first()
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Username {user.username} is already registered"
+        )
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if db_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"email {user.email} is already registered"
+        )
+    # 사용자 생성
+    hashed_password =  get_password_hash(user.password)
+    db_user =  models.User(
+        username = user.username,
+        email = user.email,
+        full_name = user.full_name,
+        hashed_password = hashed_password,
+        role = user.role    
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@app.post('/api/auth/token',response_model=schemas.Token)
+def login(
+    form_data:OAuth2PasswordRequestForm = Depends(),
+    db:Session = Depends(get_db)
+):
+    '''로그인 및 토큰발급'''
+    user = authenticate_user(db,form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect username or password',
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    # 토큰 만료시간 설정
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token =  create_access_token(
+        data = {'sub':user.username, 'role':user.role},
+        expires_delta=access_token_expires
+    )
+    return {
+        # bearer 이 토큰을 bear 소지 하고 있는 주체가  권한을 가진다
+        'access_token': access_token,'token_type':'bearer'}  
+    
+
+# Swagger ui 에서 테스트 할때는 요청헤더에 로그인해서 발생된 toekn이 있어야 함
+# ui 에서 자물쇠 버튼을 클릭하고
+# username / password  입력
+# client id : Bearer
+# 값은 : 발행된 토큰값을 넣어주고 요쳥하면 요청헤더에 포함  헤더모양은 다음과 같음
+
+# curl -X 'GET' \
+#   'http://localhost:8001/api/auth/me' \
+#   -H 'accept: application/json' \
+#   -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJza24yMCIsInJvbGUiOiJ1c2VyIiwiZXhwIjoxNzY3MDY3MTU5fQ.qIkTtg4TI-l9ZhNXeeQrmaIHBprdBKT0bmBgFMYVnm8'
+@app.get('/api/auth/me',response_model=schemas.User)
+def read_users_me(current_user:models.User = Depends(get_current_active_user)):
+    '''현재 로그인한 사용자 정보 조회'''
+    return current_user
+
+
+@app.get('/api/auth/users',response_model=List[schemas.User])
+def get_users(
+    current_user : models.User = Depends(get_current_user),
+    db:Session=Depends(get_db)
+):
+    '''사용자 목록 조회(관리자만)'''
+    if not check_permission(current_user,'admin'):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Permission denied'
+        )
+    users = db.query(models.User).all()
+    return users
+
+    
+
+
+###########################################################################################
+
+
 # 제품 목록 조회
 # response_Model 은 반환 데이터를 자동 검증하고 orm 모델을 json으로 변환해줌.
 # response_Model 은 Swagger 문서 자동 생성해줌

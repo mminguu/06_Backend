@@ -8,14 +8,18 @@ from sqlalchemy.orm import Session
 from database import get_db
 import models
 import secrets
+import os
+from dotenv import load_dotenv
+load_dotenv()
 # 보안 설정
 # secrets.token_urlsafe(64) 이 값을 한번 생성해서 .evn에 등록하고 사용해야 함(release 모드)
-SECRET_KEY = secrets.token_urlsafe(64)  # 서버실행시 기준 키를 재 발행.. 모든사용자 토큰 무효화 -> 강제 로그아웃
+SECRET_KEY = os.getenv('SECRET_KEY')  # 서버실행시 기준 키를 재 발행.. 모든사용자 토큰 무효화 -> 강제 로그아웃
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 ph = PasswordHasher()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/token")  # 로그인 api 앤드포인트 지정, 아이디/패스워드를 보내서 토큰을 받음
+# 요청헤더에서 Authorization 값을 찾는다  
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")  # 로그인 api 앤드포인트 지정, 아이디/패스워드를 보내서 토큰을 받음
 
 
 def get_password_hash(password: str) -> str:
@@ -29,9 +33,9 @@ def create_access_token(data:dict, expires_delta:Optional[timedelta]=None):
     '''액세스 토큰 생성'''
     to_encode = data.copy()
     if expires_delta:        
-        expire = datetime.now(datetime.timezone.utc) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(datetime.timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
