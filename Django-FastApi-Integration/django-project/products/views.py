@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect
 from django.conf import settings
 import httpx
-from .forms import ProductForm, UserRegistationForm
+from .forms import ProductForm, UserRegistationForm, UserLoginForm
 from django.contrib import messages
+
 # Create your views here.
 
 FASTAPI_URL = settings.FASTAPI_BASE_URL
@@ -48,8 +49,6 @@ async def update_product(product_id, data):
             return None
 
 
-###############################################################################################################
-
 async def product_list(request):
     products = await get_products()
     return render(request,'products/product_list.html',{'products': products})
@@ -91,8 +90,8 @@ async def product_edit(request, product_id):
     else:
         form = ProductForm(initial=product)  # 폼을 호출하면서 product 값으로 초기화
     return render(request, 'products/product_form.html', 
-                  {'form': form,'title':'제품수정'}
-                  )
+                {'form': form,'title':'제품수정'}
+                )
 
 async def product_delete(request, product_id):
     # 해당 아이디의 제품이 있는지 확인하고 삭제 요청을 FastAPI로 보냄
@@ -113,18 +112,52 @@ async def product_delete(request, product_id):
             
 
 ################################################ 인증 #################################
-def register_view(request):
+
+
+async def register_user(data):
+    async with httpx.AsyncClient() as client:  # 비동기 http 커넥션
+        try:
+            response = await client.post(f'{FASTAPI_URL}/api/auth/register',json=data)
+            response.raise_for_status()  # 오류 발생시 예외 발생
+            return response.json()
+        except httpx.HTTPError as e:
+            print(f"Error register user: {e}")
+            return None
+
+
+
+async def register_view(request):
     '''회원가입'''             
     if request.method=='POST':
         form = UserRegistationForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)  # form데이터 기반으로 user 객체를 생성
-            user.set_password(form.cleaned_data['password'])
-            user.save()
-            return redirect('login')
+            payload = {
+                'username':form.cleaned_data['username'],
+                'email':form.cleaned_data['email'],
+                'password':form.cleaned_data['password'],
+                'first_name':form.cleaned_data['first_name'],
+                'last_name':form.cleaned_data['last_name'],
+            }
+            result = await register_user(payload)
+            if result:
+                messages.success(request,'회원가입이 완료되었습니다.')                
+                return redirect('login')
+            else:
+                messages.error(request,'회원가입에 실패했습니다.')            
     else:
         form = UserRegistationForm()
     return render(request,'registration/register.html',{'form':form,'title':'회원가입'})
+
+async def  login_view(request):
+    '''로그인'''
+    if request.method=='POST':
+        pass
+    else:
+        form = UserLoginForm()
+    return render(request,'registration/login.html',{'form':form,'title':'로그인'})
+
+
+
 
 
 
